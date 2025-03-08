@@ -78,10 +78,10 @@ def create_price_df(item_id,interval='6h'):
     return res
 
 
-def read_master_file_csv(time_interval='6h',filepath = None):
+def read_master_file_csv(time_interval: str = '6h', filepath: Optional[str] = None) -> Optional[pd.DataFrame]:
     # Define file path if not provided
     if filepath is None:
-        filepath = Path(f'Master Files/CTI_master_file_{time_interval}.csv')
+        filepath = Path(f'Master Files/master_file_{time_interval}.csv')
 
     # Attempt to read the CSV
     try:
