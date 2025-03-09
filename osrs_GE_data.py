@@ -129,7 +129,21 @@ def create_new_master(time_interval: str = '6h',filepath: Optional[str] = None, 
         
 
         
+
+'''
+Function1():
+    inputs:
+        - list of item ids for items that we want to be tracking
+    outputs:
+        - dataframe with the new data
         
+    - loops through all of the items and creates a new master dataframe with all of the most recent data
+
+Function2():
+    - runs Function1
+    - merges new data with old data
+    - writes it back to the database or master csv file?
+'''
 
 '''
 def read_master_file_csv(time_interval: str = '6h', filepath: Optional[str] = None) -> Optional[pd.DataFrame]:
