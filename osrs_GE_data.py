@@ -85,11 +85,27 @@ def create_price_df(item_id: int,time_interval: str = '6h') -> Optional[pd.DataF
     
     return res
 
+def fetch_price_data(time_interval: str, items_list: list) -> Optional[pd.DataFrame]:
+    # To store all of the dataframes
+    df_list = []
+    
+    # Loop through the desired items list
+    for item_id in items_list:
+        try:
+            df_list.append(create_price_df(item_id, time_interval))
+        except Exception as e:
+            print(f"Skipping item {item_id} due to error: {e}")
+    
+    if not df_list:
+        print('No data was collected. Skipping file creation')
+        return None
+    
+    return pd.concat(df_list,ignore_index=True)
 
-def create_new_master(time_interval: str = '6h',filepath: Optional[str] = None, items_list: Optional[list] = None, overwrite: bool = False):
+def create_new_price_file(time_interval: str = '6h',filepath: Optional[str] = None, items_list: Optional[list] = None, overwrite: bool = False):
     # Set filepath if not specified
     if filepath is None:
-        filepath = Path(f'Master Files/master_file_{time_interval}.csv')
+        filepath = Path(f'Master Files/price_file_{time_interval}.csv')
     else:
         filepath = Path(filepath)
         
@@ -106,30 +122,50 @@ def create_new_master(time_interval: str = '6h',filepath: Optional[str] = None, 
     else:
         # Create folders if necessary based on the specified filepath
         filepath.parent.mkdir(parents=True, exist_ok=True)
-    
-    # To store all of the dataframes
-    df_list = []
-    
-    # Loop through the desired items list
-    for item_id in items_list:
-        try:
-            df_list.append(create_price_df(item_id, time_interval))
-        except Exception as e:
-            print(f"Skipping item {item_id} due to error: {e}")
-    
-    if not df_list:
-        print('No data was collected. Skipping file creation')
-        return
-    
+
     # Combine all of the dataframes into one large dataframe
-    df_combined = pd.concat(df_list,ignore_index = True)
+    df_combined = fetch_price_data(time_interval,items_list)
+    df_combined.to_csv(filepath)
+    print(f'New file saved to {filepath}')
+        
+        
+def update_price_file_csv(time_interval: str,filepath: str):
+    filepath = Path(filepath)
+    
+    try:
+        df = pd.read_csv(filepath,index_col = 0)
+    except FileNotFoundError:
+        print(f"[ERROR] File not found: {filepath}")
+        return None
+    except pd.errors.ParserError:
+        print(f"[ERROR] Unable to parse CSV file: {filepath}")
+        return None
+    except Exception as e:
+        print(f"[ERROR] An unexpected error occurred: {e}")
+        return None
+        
+    item_list = list(df['id'].unique())
+    
+    df_to_add = fetch_price_data(time_interval,item_list)
+    
+    df_combined = pd.concat([df, df_to_add]).drop_duplicates().reset_index(drop=True)
     
     df_combined.to_csv(filepath)
-    print(f'New master file saved to {filepath}')
-        
+    print(f'{filepath} has been updated')
+    
 
-        
+'''
+TODO:
 
+- come up with a default naming convention for file system on hard drive?
+    - do away with this once database is fully functioning
+    
+- write an update file function that writes to database
+
+
+
+'''
+    
 '''
 Function1():
     inputs:
