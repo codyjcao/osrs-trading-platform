@@ -105,7 +105,7 @@ def fetch_price_data(time_interval: str, items_list: list) -> Optional[pd.DataFr
 def create_new_price_file(time_interval: str = '6h',filepath: Optional[str] = None, items_list: Optional[list] = None, overwrite: bool = False):
     # Set filepath if not specified
     if filepath is None:
-        filepath = Path(f'data/price_file_{time_interval}.csv')
+        filepath = Path(f'data/raw/price_file_{time_interval}.csv')
     else:
         filepath = Path(filepath)
         
@@ -131,7 +131,7 @@ def create_new_price_file(time_interval: str = '6h',filepath: Optional[str] = No
 
 def update_price_file_csv(time_interval: str,filepath: Optional[str] = None):
     if filepath is None:
-        filepath = Path(f'data/price_file_{time_interval}.csv')
+        filepath = Path(f'data/raw/price_file_{time_interval}.csv')
     else:
         filepath = Path(filepath)
     
@@ -157,6 +157,27 @@ def update_price_file_csv(time_interval: str,filepath: Optional[str] = None):
     print(f'{filepath} has been updated')
     
 
+def load_raw_price_file(time_interval:str,filepath:Optional[str] = None):
+    if filepath is None:
+        filepath = Path(f'data/raw/price_file_{time_interval}.csv')
+    else:
+        filepath = Path(filepath)
+    
+    try:
+        df = pd.read_csv(filepath,index_col = 0)
+    except FileNotFoundError:
+        print(f"[ERROR] File not found: {filepath}")
+        return None
+    except pd.errors.ParserError:
+        print(f"[ERROR] Unable to parse CSV file: {filepath}")
+        return None
+    except Exception as e:
+        print(f"[ERROR] An unexpected error occurred: {e}")
+        return None
+    
+    return df
+    
+    
 '''
 TODO:
 

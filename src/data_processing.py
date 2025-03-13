@@ -2,9 +2,13 @@ import numpy as np
 import pandas as pd
 from typing import Optional
 
-def process(df):
+def process(df_og,save:bool=True):
+    # don't change original
+    df = df_og.copy()
+    
     # forward fill price data if any values are missing
-    df["price"] = df["price"].fillna(method="ffill")
+    df["avgHighPrice"] = df["avgHighPrice"].fillna(method="ffill")
+    df["avgLowPrice"] = df["avgLowPrice"].fillna(method="ffill")
     
     # fill NA volume data with 0's
     df['highPriceVolume'] = df['highPriceVolume'].fillna(0)
@@ -20,9 +24,16 @@ def process(df):
     # compute 1 day forward returns
     df['return_1df'] = compute_returns(df['VWAP'],4,True)
 
-    
     # compute 1 week forward returns
     df['return_1wf'] = compute_returns(df['VWAP'],4*7,True)
+    
+    # sort dataframe by id and time
+    df.sort_values(by=['id','timestamp'])
+    
+    if save:
+        df.to_csv('data/processed/processed_price_data.csv')
+    
+    return df
     
 
 
@@ -66,5 +77,9 @@ def compute_RSI(price:pd.Series,window:int):
     diff = price.diff()
     return diff.rolling(window=window).apply(_helper_RSI)
 
+
 def compute_spread(low,high,VWAP):
     return (high-low)/VWAP
+
+def compute_OI(low_vol,high_vol):
+    return (high_vol-low_vol)/(high_vol+low_vol)
